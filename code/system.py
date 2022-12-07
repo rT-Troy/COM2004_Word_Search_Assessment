@@ -10,6 +10,10 @@ version: v1.0
 from typing import List
 
 import numpy as np
+import scipy.linalg
+import scipy.linalg
+from matplotlib import pyplot as plt, cm
+
 from utils import utils
 from utils.utils import Puzzle
 
@@ -63,8 +67,14 @@ def reduce_dimensions(data: np.ndarray, model: dict) -> np.ndarray:
         np.ndarray: The reduced feature vectors.
     """
 
+    covx = np.cov(data, rowvar=0)
+    N = covx.shape[0]
+    w, v = scipy.linalg.eigh(covx, eigvals=(N - 20, N - 1))
+    v = np.fliplr(v)
+    v.shape
+    pcatest_data = np.dot((data - np.mean(data)), v)
     reduced_data = data[:, 0:N_DIMENSIONS]
-    return reduced_data
+    return pcatest_data
 
 
 def process_training_data(fvectors_train: np.ndarray, labels_train: np.ndarray) -> dict:
