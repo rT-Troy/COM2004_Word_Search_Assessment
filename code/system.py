@@ -73,7 +73,7 @@ def reduce_dimensions(data: np.ndarray, model: dict) -> np.ndarray:
     v = np.fliplr(v)
     v.shape
     pcatest_data = np.dot((data - np.mean(data)), v)
-    reduced_data = data[:, 0:N_DIMENSIONS]
+    # reduced_data = data[:, 0:N_DIMENSIONS]
     return pcatest_data
 
 
@@ -129,10 +129,11 @@ def classify_squares(fvectors_test: np.ndarray, model: dict) -> List[str]:
     Returns:
         List[str]: A list of classifier labels, i.e. one label per input feature vector.
     """
-    features = np.arange(0, fvectors_test.shape[1])
-    fvectors_train = np.asarray(model["fvectors_train"])
-    label_train = np.asarray(model["labels_train"])
 
+    features = [0,1,2,3,4,5,6,7,8,9,10,11,12]
+
+    fvectors_train = np.asarray(model["fvectors_train"])[features]
+    label_train = np.asarray(model["labels_train"])
 
     x = np.dot(fvectors_test, fvectors_train.transpose())
     modtest = np.sqrt(np.sum(fvectors_test * fvectors_test, axis=1))
@@ -141,7 +142,6 @@ def classify_squares(fvectors_test: np.ndarray, model: dict) -> List[str]:
     nearest = np.argmax(dist, axis=1)
     mdist = np.max(dist, axis=1)
     label = label_train[nearest]
-
 
     return label
 
