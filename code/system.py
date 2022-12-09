@@ -129,7 +129,21 @@ def classify_squares(fvectors_test: np.ndarray, model: dict) -> List[str]:
     Returns:
         List[str]: A list of classifier labels, i.e. one label per input feature vector.
     """
-    return ["E"] * fvectors_test.shape[0]
+    features = np.arange(0, fvectors_test.shape[1])
+    fvectors_train = np.asarray(model["fvectors_train"])
+    label_train = np.asarray(model["labels_train"])
+
+
+    x = np.dot(fvectors_test, fvectors_train.transpose())
+    modtest = np.sqrt(np.sum(fvectors_test * fvectors_test, axis=1))
+    modtrain = np.sqrt(np.sum(fvectors_train * fvectors_train, axis=1))
+    dist = x / np.outer(modtest, modtrain.transpose())
+    nearest = np.argmax(dist, axis=1)
+    mdist = np.max(dist, axis=1)
+    label = label_train[nearest]
+
+
+    return label
 
 
 def find_words(labels: np.ndarray, words: List[str], model: dict) -> List[tuple]:
