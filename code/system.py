@@ -107,6 +107,54 @@ def process_training_data(fvectors_train: np.ndarray, labels_train: np.ndarray) 
     # e.g. Storing training data labels and feature vectors in the model.
 
 
+    model = {}
+    model["labels_train"] = labels_train.tolist()
+    fvectors_train_reduced = reduce_dimensions(fvectors_train, model)
+    model["fvectors_train"] = fvectors_train_reduced.tolist()
+    return model
+
+def multidivergence(data_one, data_two, features):
+        ndim = 10
+        # compute mean vectors
+
+        mu1 = np.mean(data_one[:, features], axis=0)
+        mu2 = np.mean(data_two[:, features], axis=0)
+
+        # compute distance between means
+        dmu = mu1 - mu2
+
+        # compute covariance and inverse covariance matrices
+        cov1 = np.cov(data_one[:, features], rowvar=0)
+        cov2 = np.cov(data_two[:, features], rowvar=0)
+
+        icov1 = np.linalg.inv(cov1)
+        icov2 = np.linalg.inv(cov2)
+
+        # plug everything into the formula for multivariate gaussian divergence
+        d12 = 0.5 * np.trace(
+            np.dot(icov1, cov2) + np.dot(icov2, cov1) - 2 * np.eye(ndim)
+        ) + 0.5 * np.dot(np.dot(dmu, icov1 + icov2), dmu)
+        return d12
+
+
+def classify_squares(fvectors_test: np.ndarray, model: dict) -> List[str]:
+    """Dummy implementation of classify squares.
+
+    REWRITE THIS FUNCTION AND THIS DOCSTRING
+
+    This is the classification stage. You are passed a list of unlabelled feature
+    vectors and the model parameters learn during the training stage. You need to
+    classify each feature vector and return a list of labels.
+
+    In the dummy implementation, the label 'E' is returned for every square.
+
+    Args:
+        fvectors_train (np.ndarray): feature vectors that are to be classified, stored as rows.
+        model (dict): a dictionary storing all the model parameters needed by your classifier.
+
+    Returns:
+        List[str]: A list of classifier labels, i.e. one label per input feature vector.
+    """
     # features_all = list(range(0,20))
     # d = np.zeros(len(features_all))
     # ddd=zeros(1, features_all)
@@ -171,60 +219,14 @@ def process_training_data(fvectors_train: np.ndarray, labels_train: np.ndarray) 
     # fvectors_train_reduced = reduce_dimensions(fvectors_train, model)
     # model["fvectors_train"] = fvectors_train_reduced.tolist()
 
-    model = {}
-    model["labels_train"] = labels_train.tolist()
-    fvectors_train_reduced = reduce_dimensions(fvectors_train, model)
-    model["fvectors_train"] = fvectors_train_reduced.tolist()
-    return model
 
-def multidivergence(data_one, data_two, features):
-        ndim = 10
-        # compute mean vectors
-
-        mu1 = np.mean(data_one[:, features], axis=0)
-        mu2 = np.mean(data_two[:, features], axis=0)
-
-        # compute distance between means
-        dmu = mu1 - mu2
-
-        # compute covariance and inverse covariance matrices
-        cov1 = np.cov(data_one[:, features], rowvar=0)
-        cov2 = np.cov(data_two[:, features], rowvar=0)
-
-        icov1 = np.linalg.inv(cov1)
-        icov2 = np.linalg.inv(cov2)
-
-        # plug everything into the formula for multivariate gaussian divergence
-        d12 = 0.5 * np.trace(
-            np.dot(icov1, cov2) + np.dot(icov2, cov1) - 2 * np.eye(ndim)
-        ) + 0.5 * np.dot(np.dot(dmu, icov1 + icov2), dmu)
-        return d12
-
-
-def classify_squares(fvectors_test: np.ndarray, model: dict) -> List[str]:
-    """Dummy implementation of classify squares.
-
-    REWRITE THIS FUNCTION AND THIS DOCSTRING
-
-    This is the classification stage. You are passed a list of unlabelled feature
-    vectors and the model parameters learn during the training stage. You need to
-    classify each feature vector and return a list of labels.
-
-    In the dummy implementation, the label 'E' is returned for every square.
-
-    Args:
-        fvectors_train (np.ndarray): feature vectors that are to be classified, stored as rows.
-        model (dict): a dictionary storing all the model parameters needed by your classifier.
-
-    Returns:
-        List[str]: A list of classifier labels, i.e. one label per input feature vector.
-    """
+    features = list(range(0,15))
     fvectors_train = np.array(model["fvectors_train"])
     labels_train = np.array(model["labels_train"])
 
-    x = np.dot(fvectors_test, fvectors_train)
+    x = np.dot(fvectors_test, fvectors_train.transpose())
     modtest = np.sqrt(np.sum(fvectors_test * fvectors_test, axis=1))
-    modtrain = np.sqrt(np.sum(fvectors_train * model["fvectors_train"], axis=1))
+    modtrain = np.sqrt(np.sum(fvectors_train * fvectors_train, axis=1))
     dist = x / np.outer(modtest, modtrain.transpose())
     nearest = np.argmax(dist, axis=1)
     mdist = np.max(dist, axis=1)
