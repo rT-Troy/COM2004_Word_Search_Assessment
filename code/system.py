@@ -71,8 +71,8 @@ def reduce_dimensions(data: np.ndarray, model: dict) -> np.ndarray:
     N = covx.shape[0]
     w, v = scipy.linalg.eigh(covx, eigvals=(N - 20, N - 1))
     v = np.fliplr(v)
-    v.shape
     pcatest_data = np.dot((data - np.mean(data)), v)
+    reconstructed = np.dot(pcatest_data, v.transpose()) + np.mean(data)
     # reduced_data = data[:, 0:N_DIMENSIONS]
     return pcatest_data
 
@@ -104,6 +104,7 @@ def process_training_data(fvectors_train: np.ndarray, labels_train: np.ndarray) 
     # Note, if you are using an instance based approach, e.g. a nearest neighbour,
     # then the model will need to store the dimensionally-reduced training data and labels
     # e.g. Storing training data labels and feature vectors in the model.
+
     model = {}
     model["labels_train"] = labels_train.tolist()
     fvectors_train_reduced = reduce_dimensions(fvectors_train, model)
@@ -130,72 +131,74 @@ def classify_squares(fvectors_test: np.ndarray, model: dict) -> List[str]:
         List[str]: A list of classifier labels, i.e. one label per input feature vector.
     """
 
-    fvectors_train = np.asarray(model["fvectors_train"])
-    label_train = np.asarray(model["labels_train"])
-    features_all = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
+    # fvectors_train = np.asarray(model["fvectors_train"])
+    # label_train = np.asarray(model["labels_train"])
+    # features_all = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
+    #
+    # features_possible = []
+    # for i in (0,1):
+    #     for j in (2,3):
+    #         for k in (4,5):
+    #             for l in (6,7):
+    #                 for m in (8,9):
+    #                     for n in (10,11):
+    #                         for o in (12,13):
+    #                             for p in (14,15):
+    #                                 for q in (16,17):
+    #                                     for r in (18,19):
+    #                                         if 10 == len(set([i,j,k,l,m,n,o,p,q,r])):
+    #                                             this_features = features_all.copy()
+    #                                             this_features.remove(i)
+    #                                             this_features.remove(j)
+    #                                             this_features.remove(k)
+    #                                             this_features.remove(l)
+    #                                             this_features.remove(m)
+    #                                             this_features.remove(n)
+    #                                             this_features.remove(o)
+    #                                             this_features.remove(p)
+    #                                             this_features.remove(q)
+    #                                             this_features.remove(r)
+    #                                             features_possible.append(this_features)
+    # alphabet = ['A','B','C','D','E','F','G','H','I','J','K','l','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+    # features_better = []
+    # dmax = []
+    # d = np.zeros(len(features_possible))
+    # for d_one in alphabet:
+    #     for d_two in alphabet[alphabet.index(d_one)+1:]:
+    #         if d_one != d_two:
+    #             for i in range(len(features_possible)):
+    #                 ndim = 10
+    #                 # compute mean vectors
+    #                 data_one = fvectors_train[label_train == d_one]
+    #                 data_two = fvectors_train[label_train == d_two]
+    #                 mu1 = np.mean(data_one[:, features_possible[i]], axis=0)
+    #                 mu2 = np.mean(data_two[:, features_possible[i]], axis=0)
+    #
+    #                 # compute distance between means
+    #                 dmu = mu1 - mu2
+    #
+    #                 # compute covariance and inverse covariance matrices
+    #                 cov1 = np.cov(data_one[:, features_possible[i]], rowvar=0)
+    #                 cov2 = np.cov(data_two[:, features_possible[i]], rowvar=0)
+    #
+    #                 icov1 = np.linalg.inv(cov1)
+    #                 icov2 = np.linalg.inv(cov2)
+    #
+    #                 # plug everything into the formula for multivariate gaussian divergence
+    #                 d12 = 0.5 * np.trace(
+    #                     np.dot(icov1, cov2) + np.dot(icov2, cov1) - 2 * np.eye(ndim)
+    #                 ) + 0.5 * np.dot(np.dot(dmu, icov1 + icov2), dmu)
+    #                 d[i] = d12
+    #     dmax.append(d.sum())
+    #     sorted_indexes = np.argsort(-d)
+    #     features_better.append(sorted_indexes[0:10])
+    # list_f = np.array(features_better).flatten()
+    # d2 = Counter(list_f)
+    # sorted_x = sorted(d2.items(), key=lambda x: x[1], reverse=True)
+    # sss = [(235, 3), (980, 3), (897, 3), (896, 3), (374, 3), (583, 2), (448, 2), (605, 2), (723, 2), (685, 2), (236, 1), (430, 1), (162, 1), (847, 1), (901, 1)]
+    # features = [x for x, _ in sorted_x][0:10]
 
-    features_possible = []
-    for i in (0,1):
-        for j in (2,3):
-            for k in (4,5):
-                for l in (6,7):
-                    for m in (8,9):
-                        for n in (10,11):
-                            for o in (12,13):
-                                for p in (14,15):
-                                    for q in (16,17):
-                                        for r in (18,19):
-                                            if 10 == len(set([i,j,k,l,m,n,o,p,q,r])):
-                                                this_features = features_all.copy()
-                                                this_features.remove(i)
-                                                this_features.remove(j)
-                                                this_features.remove(k)
-                                                this_features.remove(l)
-                                                this_features.remove(m)
-                                                this_features.remove(n)
-                                                this_features.remove(o)
-                                                this_features.remove(p)
-                                                this_features.remove(q)
-                                                this_features.remove(r)
-                                                features_possible.append(this_features)
-    alphabet = ['A','B','C','D','E','F','G','H','I','J','K','l','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
-    features_better = []
-    dmax = []
-    d = np.zeros(len(features_possible))
-    for d_one in ['A','B','C']:
-        for d_two in alphabet[alphabet.index(d_one)+1:]:
-            if d_one != d_two:
-                for i in range(len(features_possible)):
-                    ndim = 10
-                    # compute mean vectors
-                    data_one = fvectors_train[label_train == d_one]
-                    data_two = fvectors_train[label_train == d_two]
-                    mu1 = np.mean(data_one[:, features_possible[i]], axis=0)
-                    mu2 = np.mean(data_two[:, features_possible[i]], axis=0)
-
-                    # compute distance between means
-                    dmu = mu1 - mu2
-
-                    # compute covariance and inverse covariance matrices
-                    cov1 = np.cov(data_one[:, features_possible[i]], rowvar=0)
-                    cov2 = np.cov(data_two[:, features_possible[i]], rowvar=0)
-
-                    icov1 = np.linalg.inv(cov1)
-                    icov2 = np.linalg.inv(cov2)
-
-                    # plug everything into the formula for multivariate gaussian divergence
-                    d12 = 0.5 * np.trace(
-                        np.dot(icov1, cov2) + np.dot(icov2, cov1) - 2 * np.eye(ndim)
-                    ) + 0.5 * np.dot(np.dot(dmu, icov1 + icov2), dmu)
-                    d[i] = d12
-        dmax.append(d.sum())
-        sorted_indexes = np.argsort(-d)
-        features_better.append(sorted_indexes[0:10])
-    list_f = np.array(features_better).flatten()
-    d2 = Counter(list_f)
-    sorted_x = sorted(d2.items(), key=lambda x: x[1], reverse=True)
-    sss = [(235, 3), (980, 3), (897, 3), (896, 3), (374, 3), (583, 2), (448, 2), (605, 2), (723, 2), (685, 2), (236, 1), (430, 1), (162, 1), (847, 1), (901, 1)]
-    features = [x for x, _ in sss][0:10]
+    features = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
 
     fvectors_train = np.asarray(model["fvectors_train"])[features]
     label_train = np.asarray(model["labels_train"])[features]
