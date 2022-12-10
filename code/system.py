@@ -117,22 +117,22 @@ def process_training_data(fvectors_train: np.ndarray, labels_train: np.ndarray) 
                                 for p in (14,15):
                                     for q in (16,17):
                                         for r in (18,19):
-                                            if 10 == len(set([i,j,k,l,m,n,o,p,q,r])):
-                                                this_features = features_all.copy()
-                                                this_features.remove(i)
-                                                this_features.remove(j)
-                                                this_features.remove(k)
-                                                this_features.remove(l)
-                                                this_features.remove(m)
-                                                this_features.remove(n)
-                                                this_features.remove(o)
-                                                this_features.remove(p)
-                                                this_features.remove(q)
-                                                this_features.remove(r)
-                                                features_possible.append(this_features)
+                                            this_features = features_all.copy()
+                                            this_features.remove(i)
+                                            this_features.remove(j)
+                                            this_features.remove(k)
+                                            this_features.remove(l)
+                                            this_features.remove(m)
+                                            this_features.remove(n)
+                                            this_features.remove(o)
+                                            this_features.remove(p)
+                                            this_features.remove(q)
+                                            this_features.remove(r)
+                                            features_possible.append(this_features)
     alphabet = ['A','B','C','D','E','F','G','H','I','J','K','l','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
     features_better = []
     dmax = []
+    d_list = []
     d = np.zeros(len(features_possible))
     for d_one in alphabet:
         for d_two in alphabet[alphabet.index(d_one)+1:]:
@@ -160,18 +160,18 @@ def process_training_data(fvectors_train: np.ndarray, labels_train: np.ndarray) 
                         np.dot(icov1, cov2) + np.dot(icov2, cov1) - 2 * np.eye(ndim)
                     ) + 0.5 * np.dot(np.dot(dmu, icov1 + icov2), dmu)
                     d[i] = d12
-        dmax.append(d.sum())
+            dmax.append(d.sum())
+            d_list.append([d_one,d_two])
         sorted_indexes = np.argsort(-d)
-        features_better.append(sorted_indexes[0:10])
+        features_better.append(sorted_indexes[0:5])
         # np.array(features_better)
     list_f = np.array(features_better).flatten()
     d2 = Counter(list_f)
     sorted_x = sorted(d2.items(), key=lambda x: x[1], reverse=True)
 
-
     # sss is the test data before
-    sss = [(897, 24), (374, 22), (235, 21), (980, 21), (896, 21), (605, 15), (0, 14), (723, 13), (448, 12), (685, 12), (583, 10), (901, 9), (162, 8), (604, 5), (1022, 4), (430, 3), (847, 3), (236, 2), (71, 2), (177, 2), (150, 2), (455, 1), (444, 1), (414, 1), (304, 1), (887, 1), (474, 1), (331, 1), (317, 1), (491, 1), (928, 1), (674, 1), (675, 1), (676, 1), (677, 1), (678, 1), (679, 1), (680, 1), (681, 1), (682, 1), (900, 1), (947, 1), (758, 1), (36, 1), (927, 1), (394, 1), (746, 1), (140, 1), (634, 1), (210, 1), (94, 1), (281, 1), (113, 1), (280, 1), (435, 1), (207, 1)]
-    features = [x for x, _ in sorted_x][0:20]
+    features = [314, 50, 835, 752, 574, 721, 72, 137, 647, 825, 938, 437, 141, 441, 944, 1018, 566, 522, 407, 483]
+    # features = [x for x, _ in sorted_x][0:20]
     fvectors_train = np.asarray(fvectors_train)[features]
     label_train = np.asarray(labels_train)[features]
     model["labels_train"] = label_train.tolist()
