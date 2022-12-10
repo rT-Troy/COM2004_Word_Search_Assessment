@@ -162,41 +162,41 @@ def classify_squares(fvectors_test: np.ndarray, model: dict) -> List[str]:
     features_better = []
     dmax = []
     d = np.zeros(len(features_possible))
-    for d_one in ['A','B','C']:
-        for d_two in alphabet[alphabet.index(d_one)+1:]:
-            if d_one != d_two:
-                for i in range(len(features_possible)):
-                    ndim = 10
-                    # compute mean vectors
-                    data_one = fvectors_train[label_train == d_one]
-                    data_two = fvectors_train[label_train == d_two]
-                    mu1 = np.mean(data_one[:, features_possible[i]], axis=0)
-                    mu2 = np.mean(data_two[:, features_possible[i]], axis=0)
-
-                    # compute distance between means
-                    dmu = mu1 - mu2
-
-                    # compute covariance and inverse covariance matrices
-                    cov1 = np.cov(data_one[:, features_possible[i]], rowvar=0)
-                    cov2 = np.cov(data_two[:, features_possible[i]], rowvar=0)
-
-                    icov1 = np.linalg.inv(cov1)
-                    icov2 = np.linalg.inv(cov2)
-
-                    # plug everything into the formula for multivariate gaussian divergence
-                    d12 = 0.5 * np.trace(
-                        np.dot(icov1, cov2) + np.dot(icov2, cov1) - 2 * np.eye(ndim)
-                    ) + 0.5 * np.dot(np.dot(dmu, icov1 + icov2), dmu)
-                    d[i] = d12
-        dmax.append(d.sum())
-        sorted_indexes = np.argsort(-d)
-        features_better.append(sorted_indexes[0:10])
-    list_f = np.array(features_better).flatten()
-    d2 = Counter(list_f)
-    sorted_x = sorted(d2.items(), key=lambda x: x[1], reverse=True)
-    sss = [(235, 3), (980, 3), (897, 3), (896, 3), (374, 3), (583, 2), (448, 2), (605, 2), (723, 2), (685, 2), (236, 1), (430, 1), (162, 1), (847, 1), (901, 1)]
-    features = [x for x, _ in sss][0:10]
-
+    # for d_one in alphabet:
+    #     for d_two in alphabet[alphabet.index(d_one)+1:]:
+    #         if d_one != d_two:
+    #             for i in range(len(features_possible)):
+    #                 ndim = 10
+    #                 # compute mean vectors
+    #                 data_one = fvectors_train[label_train == d_one]
+    #                 data_two = fvectors_train[label_train == d_two]
+    #                 mu1 = np.mean(data_one[:, features_possible[i]], axis=0)
+    #                 mu2 = np.mean(data_two[:, features_possible[i]], axis=0)
+    #
+    #                 # compute distance between means
+    #                 dmu = mu1 - mu2
+    #
+    #                 # compute covariance and inverse covariance matrices
+    #                 cov1 = np.cov(data_one[:, features_possible[i]], rowvar=0)
+    #                 cov2 = np.cov(data_two[:, features_possible[i]], rowvar=0)
+    #
+    #                 icov1 = np.linalg.inv(cov1)
+    #                 icov2 = np.linalg.inv(cov2)
+    #
+    #                 # plug everything into the formula for multivariate gaussian divergence
+    #                 d12 = 0.5 * np.trace(
+    #                     np.dot(icov1, cov2) + np.dot(icov2, cov1) - 2 * np.eye(ndim)
+    #                 ) + 0.5 * np.dot(np.dot(dmu, icov1 + icov2), dmu)
+    #                 d[i] = d12
+    #     dmax.append(d.sum())
+    #     sorted_indexes = np.argsort(-d)
+    #     features_better.append(sorted_indexes[0:10])
+    #     # np.array(features_better)
+    # list_f = np.array(features_better).flatten()
+    # d2 = Counter(list_f)
+    # sorted_x = sorted(d2.items(), key=lambda x: x[1], reverse=True)
+    sss = [(897, 24), (374, 22), (235, 21), (980, 21), (896, 21), (605, 15), (0, 14), (723, 13), (448, 12), (685, 12), (583, 10), (901, 9), (162, 8), (604, 5), (1022, 4), (430, 3), (847, 3), (236, 2), (71, 2), (177, 2), (150, 2), (455, 1), (444, 1), (414, 1), (304, 1), (887, 1), (474, 1), (331, 1), (317, 1), (491, 1), (928, 1), (674, 1), (675, 1), (676, 1), (677, 1), (678, 1), (679, 1), (680, 1), (681, 1), (682, 1), (900, 1), (947, 1), (758, 1), (36, 1), (927, 1), (394, 1), (746, 1), (140, 1), (634, 1), (210, 1), (94, 1), (281, 1), (113, 1), (280, 1), (435, 1), (207, 1)]
+    features = [x for x, _ in sss][0:20]
     fvectors_train = np.asarray(model["fvectors_train"])[features]
     label_train = np.asarray(model["labels_train"])[features]
 
