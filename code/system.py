@@ -133,36 +133,69 @@ def classify_squares(fvectors_test: np.ndarray, model: dict) -> List[str]:
     fvectors_train = np.asarray(model["fvectors_train"])
     label_train = np.asarray(model["labels_train"])
     features_all = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
-    d = np.zeros(20)
-    data_one = fvectors_train[label_train == 'A']
-    data_two = fvectors_train[label_train == 'B']
-    for i in range(20):
-        this_feature = features_all.copy()
-        this_feature.remove(i)
-        ndim = len(this_feature)
-        # compute mean vectors
-        mu1 = np.mean(data_one[:, this_feature], axis=0)
-        mu2 = np.mean(data_two[:, this_feature], axis=0)
 
-        # compute distance between means
-        dmu = mu1 - mu2
+    features_possible = []
+    for i in (0,1):
+        for j in (2,3):
+            for k in (4,5):
+                for l in (6,7):
+                    for m in (8,9):
+                        for n in (10,11):
+                            for o in (12,13):
+                                for p in (14,15):
+                                    for q in (16,17):
+                                        for r in (18,19):
+                                            if 10 == len(set([i,j,k,l,m,n,o,p,q,r])):
+                                                this_features = features_all.copy()
+                                                this_features.remove(i)
+                                                this_features.remove(j)
+                                                this_features.remove(k)
+                                                this_features.remove(l)
+                                                this_features.remove(m)
+                                                this_features.remove(n)
+                                                this_features.remove(o)
+                                                this_features.remove(p)
+                                                this_features.remove(q)
+                                                this_features.remove(r)
+                                                features_possible.append(this_features)
+    alphabet = ['A','B','C','D','E','F','G','H','I','J','K','l','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+    features = []
+    dmax = []
+    d = np.zeros(len(features_possible))
+    for d_one in alphabet:
+        for d_two in alphabet:
+             if d_one != d_two:
+                for i in range(len(features_possible)):
+                    ndim = 10
+                    # compute mean vectors
+                    data_one = fvectors_train[label_train == d_one]
+                    data_two = fvectors_train[label_train == d_two]
+                    mu1 = np.mean(data_one[:, features_possible[i]], axis=0)
+                    mu2 = np.mean(data_two[:, features_possible[i]], axis=0)
 
-        # compute covariance and inverse covariance matrices
-        cov1 = np.cov(data_one[:, this_feature], rowvar=0)
-        cov2 = np.cov(data_two[:, this_feature], rowvar=0)
+                    # compute distance between means
+                    dmu = mu1 - mu2
 
-        icov1 = np.linalg.inv(cov1)
-        icov2 = np.linalg.inv(cov2)
+                    # compute covariance and inverse covariance matrices
+                    cov1 = np.cov(data_one[:, features_possible[i]], rowvar=0)
+                    cov2 = np.cov(data_two[:, features_possible[i]], rowvar=0)
 
-        # plug everything into the formula for multivariate gaussian divergence
-        d12 = 0.5 * np.trace(
-            np.dot(icov1, cov2) + np.dot(icov2, cov1) - 2 * np.eye(ndim)
-        ) + 0.5 * np.dot(np.dot(dmu, icov1 + icov2), dmu)
-        d[i] = d12
-    sorted_indexes = np.argsort(-d)
-    features = sorted_indexes[0:9]
-    fvectors_train = np.asarray(model["fvectors_train"])[features]
-    label_train = np.asarray(model["labels_train"])
+                    icov1 = np.linalg.inv(cov1)
+                    icov2 = np.linalg.inv(cov2)
+
+                    # plug everything into the formula for multivariate gaussian divergence
+                    d12 = 0.5 * np.trace(
+                        np.dot(icov1, cov2) + np.dot(icov2, cov1) - 2 * np.eye(ndim)
+                    ) + 0.5 * np.dot(np.dot(dmu, icov1 + icov2), dmu)
+                    d[i] = d12
+                    dmax.append(d.sum())
+
+                sorted_indexes = np.argsort(-d)
+                features.append(sorted_indexes[0:10])
+
+
+            fvectors_train = np.asarray(model["fvectors_train"])[features]
+            label_train = np.asarray(model["labels_train"])[features]
 
     x = np.dot(fvectors_test, fvectors_train.transpose())
     modtest = np.sqrt(np.sum(fvectors_test * fvectors_test, axis=1))
