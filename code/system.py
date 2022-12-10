@@ -163,8 +163,9 @@ def classify_squares(fvectors_test: np.ndarray, model: dict) -> List[str]:
     dmax = []
     d = np.zeros(len(features_possible))
     for d_one in alphabet:
+        alphabet.copy().remove(d_one)
         for d_two in alphabet:
-             if d_one != d_two:
+            if d_one != d_two:
                 for i in range(len(features_possible)):
                     ndim = 10
                     # compute mean vectors
@@ -194,8 +195,8 @@ def classify_squares(fvectors_test: np.ndarray, model: dict) -> List[str]:
                 features.append(sorted_indexes[0:10])
 
 
-            fvectors_train = np.asarray(model["fvectors_train"])[features]
-            label_train = np.asarray(model["labels_train"])[features]
+    fvectors_train = np.asarray(model["fvectors_train"])[features]
+    label_train = np.asarray(model["labels_train"])[features]
 
     x = np.dot(fvectors_test, fvectors_train.transpose())
     modtest = np.sqrt(np.sum(fvectors_test * fvectors_test, axis=1))
