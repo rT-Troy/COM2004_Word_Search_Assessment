@@ -104,8 +104,15 @@ def process_training_data(fvectors_train: np.ndarray, labels_train: np.ndarray) 
     # Note, if you are using an instance based approach, e.g. a nearest neighbour,
     # then the model will need to store the dimensionally-reduced training data and labels
     # e.g. Storing training data labels and feature vectors in the model.
+    features_all = list(range(0,40))
+    d = np.zeros(len(features_all))
+
+    # for i in range(features_all):
+    #     d[i] = multidivergence(adata, bdata, [i])
+    # index1 = np.argmax(d)
+
+
     model = {}
-    features_all = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
     features_possible = []
     for i in (0,1):
         for j in (2,3):
@@ -136,42 +143,24 @@ def process_training_data(fvectors_train: np.ndarray, labels_train: np.ndarray) 
     d = np.zeros(len(features_possible))
     for d_one in alphabet:
         for d_two in alphabet[alphabet.index(d_one)+1:]:
-            if d_one != d_two:
+            if d_one != d_two and d_one!='Z':
                 for i in range(len(features_possible)):
-                    ndim = 10
-                    # compute mean vectors
                     data_one = fvectors_train[labels_train == d_one]
                     data_two = fvectors_train[labels_train == d_two]
-                    mu1 = np.mean(data_one[:, features_possible[i]], axis=0)
-                    mu2 = np.mean(data_two[:, features_possible[i]], axis=0)
+                    d[i] = multidivergence(data_one,data_two,features_possible[i])
 
-                    # compute distance between means
-                    dmu = mu1 - mu2
-
-                    # compute covariance and inverse covariance matrices
-                    cov1 = np.cov(data_one[:, features_possible[i]], rowvar=0)
-                    cov2 = np.cov(data_two[:, features_possible[i]], rowvar=0)
-
-                    icov1 = np.linalg.inv(cov1)
-                    icov2 = np.linalg.inv(cov2)
-
-                    # plug everything into the formula for multivariate gaussian divergence
-                    d12 = 0.5 * np.trace(
-                        np.dot(icov1, cov2) + np.dot(icov2, cov1) - 2 * np.eye(ndim)
-                    ) + 0.5 * np.dot(np.dot(dmu, icov1 + icov2), dmu)
-                    d[i] = d12
             dmax.append(d.sum())
             d_list.append([d_one,d_two])
         sorted_indexes = np.argsort(-d)
-        features_better.append(sorted_indexes[0:5])
+        features_better.append(sorted_indexes[0:10])
         # np.array(features_better)
     list_f = np.array(features_better).flatten()
     d2 = Counter(list_f)
     sorted_x = sorted(d2.items(), key=lambda x: x[1], reverse=True)
 
     # sss is the test data before
-    features = [314, 50, 835, 752, 574, 721, 72, 137, 647, 825, 938, 437, 141, 441, 944, 1018, 566, 522, 407, 483]
-    # features = [x for x, _ in sorted_x][0:20]
+    # features = [314, 50, 835, 752, 574, 721, 72, 137, 647, 825, 938, 437, 141, 441, 944, 1018, 566, 522, 407, 483]
+    features = [x for x, _ in sorted_x][0:20]
     fvectors_train = np.asarray(fvectors_train)[features]
     label_train = np.asarray(labels_train)[features]
     model["labels_train"] = label_train.tolist()
@@ -182,6 +171,29 @@ def process_training_data(fvectors_train: np.ndarray, labels_train: np.ndarray) 
     # fvectors_train_reduced = reduce_dimensions(fvectors_train, model)
     # model["fvectors_train"] = fvectors_train_reduced.tolist()
     return model
+
+def multidivergence(data_one, data_two, features):
+        ndim = 10
+        # compute mean vectors
+
+        mu1 = np.mean(data_one[:, features], axis=0)
+        mu2 = np.mean(data_two[:, features], axis=0)
+
+        # compute distance between means
+        dmu = mu1 - mu2
+
+        # compute covariance and inverse covariance matrices
+        cov1 = np.cov(data_one[:, features], rowvar=0)
+        cov2 = np.cov(data_two[:, features], rowvar=0)
+
+        icov1 = np.linalg.inv(cov1)
+        icov2 = np.linalg.inv(cov2)
+
+        # plug everything into the formula for multivariate gaussian divergence
+        d12 = 0.5 * np.trace(
+            np.dot(icov1, cov2) + np.dot(icov2, cov1) - 2 * np.eye(ndim)
+        ) + 0.5 * np.dot(np.dot(dmu, icov1 + icov2), dmu)
+        return d12
 
 
 def classify_squares(fvectors_test: np.ndarray, model: dict) -> List[str]:
