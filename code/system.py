@@ -130,8 +130,37 @@ def classify_squares(fvectors_test: np.ndarray, model: dict) -> List[str]:
         List[str]: A list of classifier labels, i.e. one label per input feature vector.
     """
 
-    features = [0,1,2,3,4,5,6,7,8,9,10,11,12]
+    fvectors_train = np.asarray(model["fvectors_train"])
+    label_train = np.asarray(model["labels_train"])
+    features_all = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
+    d = np.zeros(20)
+    data_one = fvectors_train[label_train == 'A']
+    data_two = fvectors_train[label_train == 'B']
+    for i in range(20):
+        this_feature = features_all.copy()
+        this_feature.remove(i)
+        ndim = len(this_feature)
+        # compute mean vectors
+        mu1 = np.mean(data_one[:, this_feature], axis=0)
+        mu2 = np.mean(data_two[:, this_feature], axis=0)
 
+        # compute distance between means
+        dmu = mu1 - mu2
+
+        # compute covariance and inverse covariance matrices
+        cov1 = np.cov(data_one[:, this_feature], rowvar=0)
+        cov2 = np.cov(data_two[:, this_feature], rowvar=0)
+
+        icov1 = np.linalg.inv(cov1)
+        icov2 = np.linalg.inv(cov2)
+
+        # plug everything into the formula for multivariate gaussian divergence
+        d12 = 0.5 * np.trace(
+            np.dot(icov1, cov2) + np.dot(icov2, cov1) - 2 * np.eye(ndim)
+        ) + 0.5 * np.dot(np.dot(dmu, icov1 + icov2), dmu)
+        d[i] = d12
+    sorted_indexes = np.argsort(-d)
+    features = sorted_indexes[0:9]
     fvectors_train = np.asarray(model["fvectors_train"])[features]
     label_train = np.asarray(model["labels_train"])
 
