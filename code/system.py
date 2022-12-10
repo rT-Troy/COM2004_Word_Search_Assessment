@@ -222,7 +222,7 @@ def classify_squares(fvectors_test: np.ndarray, model: dict) -> List[str]:
     fvectors_train = np.array(model["fvectors_train"])
     labels_train = np.array(model["labels_train"])
 
-    x = np.dot(fvectors_test, fvectors_train)
+    x = np.dot(fvectors_test, fvectors_train.transpose())
     modtest = np.sqrt(np.sum(fvectors_test * fvectors_test, axis=1))
     modtrain = np.sqrt(np.sum(fvectors_train * model["fvectors_train"], axis=1))
     dist = x / np.outer(modtest, modtrain.transpose())
