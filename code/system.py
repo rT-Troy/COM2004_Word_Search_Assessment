@@ -6,7 +6,7 @@ REWRITE THE FUNCTIONS BELOW AND REWRITE THIS DOCSTRING
 
 version: v1.0
 """
-
+from collections import Counter
 from typing import List
 
 import numpy as np
@@ -159,12 +159,11 @@ def classify_squares(fvectors_test: np.ndarray, model: dict) -> List[str]:
                                                 this_features.remove(r)
                                                 features_possible.append(this_features)
     alphabet = ['A','B','C','D','E','F','G','H','I','J','K','l','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
-    features = []
+    features_better = []
     dmax = []
     d = np.zeros(len(features_possible))
-    for d_one in alphabet:
-        alphabet.copy().remove(d_one)
-        for d_two in alphabet:
+    for d_one in ['A','B','C']:
+        for d_two in alphabet[alphabet.index(d_one)+1:]:
             if d_one != d_two:
                 for i in range(len(features_possible)):
                     ndim = 10
@@ -189,11 +188,14 @@ def classify_squares(fvectors_test: np.ndarray, model: dict) -> List[str]:
                         np.dot(icov1, cov2) + np.dot(icov2, cov1) - 2 * np.eye(ndim)
                     ) + 0.5 * np.dot(np.dot(dmu, icov1 + icov2), dmu)
                     d[i] = d12
-                    dmax.append(d.sum())
-
-                sorted_indexes = np.argsort(-d)
-                features.append(sorted_indexes[0:10])
-
+        dmax.append(d.sum())
+        sorted_indexes = np.argsort(-d)
+        features_better.append(sorted_indexes[0:10])
+    list_f = np.array(features_better).flatten()
+    d2 = Counter(list_f)
+    sorted_x = sorted(d2.items(), key=lambda x: x[1], reverse=True)
+    sss = [(235, 3), (980, 3), (897, 3), (896, 3), (374, 3), (583, 2), (448, 2), (605, 2), (723, 2), (685, 2), (236, 1), (430, 1), (162, 1), (847, 1), (901, 1)]
+    features = [x for x, _ in sss][0:10]
 
     fvectors_train = np.asarray(model["fvectors_train"])[features]
     label_train = np.asarray(model["labels_train"])[features]
