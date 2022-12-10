@@ -105,35 +105,7 @@ def process_training_data(fvectors_train: np.ndarray, labels_train: np.ndarray) 
     # then the model will need to store the dimensionally-reduced training data and labels
     # e.g. Storing training data labels and feature vectors in the model.
     model = {}
-    model["labels_train"] = labels_train.tolist()
-    fvectors_train_reduced = reduce_dimensions(fvectors_train, model)
-    model["fvectors_train"] = fvectors_train_reduced.tolist()
-    return model
-
-
-def classify_squares(fvectors_test: np.ndarray, model: dict) -> List[str]:
-    """Dummy implementation of classify squares.
-
-    REWRITE THIS FUNCTION AND THIS DOCSTRING
-
-    This is the classification stage. You are passed a list of unlabelled feature
-    vectors and the model parameters learn during the training stage. You need to
-    classify each feature vector and return a list of labels.
-
-    In the dummy implementation, the label 'E' is returned for every square.
-
-    Args:
-        fvectors_train (np.ndarray): feature vectors that are to be classified, stored as rows.
-        model (dict): a dictionary storing all the model parameters needed by your classifier.
-
-    Returns:
-        List[str]: A list of classifier labels, i.e. one label per input feature vector.
-    """
-
-    fvectors_train = np.asarray(model["fvectors_train"])
-    label_train = np.asarray(model["labels_train"])
     features_all = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
-
     features_possible = []
     for i in (0,1):
         for j in (2,3):
@@ -168,8 +140,8 @@ def classify_squares(fvectors_test: np.ndarray, model: dict) -> List[str]:
     #             for i in range(len(features_possible)):
     #                 ndim = 10
     #                 # compute mean vectors
-    #                 data_one = fvectors_train[label_train == d_one]
-    #                 data_two = fvectors_train[label_train == d_two]
+    #                 data_one = fvectors_train[labels_train == d_one]
+    #                 data_two = fvectors_train[labels_train == d_two]
     #                 mu1 = np.mean(data_one[:, features_possible[i]], axis=0)
     #                 mu2 = np.mean(data_two[:, features_possible[i]], axis=0)
     #
@@ -195,18 +167,49 @@ def classify_squares(fvectors_test: np.ndarray, model: dict) -> List[str]:
     # list_f = np.array(features_better).flatten()
     # d2 = Counter(list_f)
     # sorted_x = sorted(d2.items(), key=lambda x: x[1], reverse=True)
-    sss = [(897, 24), (374, 22), (235, 21), (980, 21), (896, 21), (605, 15), (0, 14), (723, 13), (448, 12), (685, 12), (583, 10), (901, 9), (162, 8), (604, 5), (1022, 4), (430, 3), (847, 3), (236, 2), (71, 2), (177, 2), (150, 2), (455, 1), (444, 1), (414, 1), (304, 1), (887, 1), (474, 1), (331, 1), (317, 1), (491, 1), (928, 1), (674, 1), (675, 1), (676, 1), (677, 1), (678, 1), (679, 1), (680, 1), (681, 1), (682, 1), (900, 1), (947, 1), (758, 1), (36, 1), (927, 1), (394, 1), (746, 1), (140, 1), (634, 1), (210, 1), (94, 1), (281, 1), (113, 1), (280, 1), (435, 1), (207, 1)]
-    features = [x for x, _ in sss][0:20]
-    fvectors_train = np.asarray(model["fvectors_train"])[features]
-    label_train = np.asarray(model["labels_train"])[features]
 
-    x = np.dot(fvectors_test, fvectors_train.transpose())
+
+    # sss is the test data before
+    sss = [(897, 24), (374, 22), (235, 21), (980, 21), (896, 21), (605, 15), (0, 14), (723, 13), (448, 12), (685, 12), (583, 10), (901, 9), (162, 8), (604, 5), (1022, 4), (430, 3), (847, 3), (236, 2), (71, 2), (177, 2), (150, 2), (455, 1), (444, 1), (414, 1), (304, 1), (887, 1), (474, 1), (331, 1), (317, 1), (491, 1), (928, 1), (674, 1), (675, 1), (676, 1), (677, 1), (678, 1), (679, 1), (680, 1), (681, 1), (682, 1), (900, 1), (947, 1), (758, 1), (36, 1), (927, 1), (394, 1), (746, 1), (140, 1), (634, 1), (210, 1), (94, 1), (281, 1), (113, 1), (280, 1), (435, 1), (207, 1)]
+    features = [x for x, _ in sss][0:30]
+    fvectors_train = np.asarray(fvectors_train)[features]
+    label_train = np.asarray(labels_train)[features]
+    model["labels_train"] = label_train.tolist()
+    fvectors_train_reduced = reduce_dimensions(fvectors_train, model)
+    model["fvectors_train"] = fvectors_train_reduced.tolist()
+
+    # model["labels_train"] = labels_train.tolist()
+    # fvectors_train_reduced = reduce_dimensions(fvectors_train, model)
+    # model["fvectors_train"] = fvectors_train_reduced.tolist()
+    return model
+
+
+def classify_squares(fvectors_test: np.ndarray, model: dict) -> List[str]:
+    """Dummy implementation of classify squares.
+
+    REWRITE THIS FUNCTION AND THIS DOCSTRING
+
+    This is the classification stage. You are passed a list of unlabelled feature
+    vectors and the model parameters learn during the training stage. You need to
+    classify each feature vector and return a list of labels.
+
+    In the dummy implementation, the label 'E' is returned for every square.
+
+    Args:
+        fvectors_train (np.ndarray): feature vectors that are to be classified, stored as rows.
+        model (dict): a dictionary storing all the model parameters needed by your classifier.
+
+    Returns:
+        List[str]: A list of classifier labels, i.e. one label per input feature vector.
+    """
+    fvectors_train = model["fvectors_train"]
+    x = np.dot(fvectors_test, fvectors_train)
     modtest = np.sqrt(np.sum(fvectors_test * fvectors_test, axis=1))
-    modtrain = np.sqrt(np.sum(fvectors_train * fvectors_train, axis=1))
+    modtrain = np.sqrt(np.sum(model["fvectors_train"] * model["fvectors_train"], axis=1))
     dist = x / np.outer(modtest, modtrain.transpose())
     nearest = np.argmax(dist, axis=1)
     mdist = np.max(dist, axis=1)
-    label = label_train[nearest]
+    label = model["labels_train"][nearest]
 
     return label
 
