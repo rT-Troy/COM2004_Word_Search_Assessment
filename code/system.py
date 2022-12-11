@@ -11,9 +11,7 @@ from typing import List
 
 import numpy as np
 import scipy.linalg
-import scipy.linalg
-from matplotlib import pyplot as plt, cm
-from numpy import zeros
+
 
 from utils import utils
 from utils.utils import Puzzle
@@ -67,7 +65,6 @@ def reduce_dimensions(data: np.ndarray, model: dict) -> np.ndarray:
     Returns:
         np.ndarray: The reduced feature vectors.
     """
-
     covx = np.cov(data, rowvar=0)
     N = covx.shape[0]
     w, v = scipy.linalg.eigh(covx, eigvals=(N - 20, N - 1))
@@ -220,8 +217,9 @@ def classify_squares(fvectors_test: np.ndarray, model: dict) -> List[str]:
     # model["fvectors_train"] = fvectors_train_reduced.tolist()
 
 
-    features = list(range(0,15))
-    fvectors_train = np.array(model["fvectors_train"])
+    features = list(range(0,20))
+    fvectors_train = np.array(model["fvectors_train"])#[:, features]
+    fvectors_test = fvectors_test.copy()#[:, features]
     labels_train = np.array(model["labels_train"])
 
     x = np.dot(fvectors_test, fvectors_train.transpose())
