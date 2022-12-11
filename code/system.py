@@ -70,7 +70,6 @@ def reduce_dimensions(data: np.ndarray, model: dict) -> np.ndarray:
     w, v = scipy.linalg.eigh(covx, eigvals=(N - N_DIMENSIONS, N - 1))
     v = np.fliplr(v)
     pcatest_data = np.dot((data - np.mean(data)), v)
-
     # reduced_data = data[:, 0:N_DIMENSIONS]
     return pcatest_data
 
@@ -106,7 +105,6 @@ def process_training_data(fvectors_train: np.ndarray, labels_train: np.ndarray) 
 
     model = {}
     model["labels_train"] = labels_train.tolist()
-    model["ori_fvectors_train"] = fvectors_train.tolist()
     fvectors_train_reduced = reduce_dimensions(fvectors_train, model)
     model["fvectors_train"] = fvectors_train_reduced.tolist()
     return model
