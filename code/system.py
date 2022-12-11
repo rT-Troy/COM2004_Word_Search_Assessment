@@ -65,13 +65,9 @@ def reduce_dimensions(data: np.ndarray, model: dict) -> np.ndarray:
     Returns:
         np.ndarray: The reduced feature vectors.
     """
-    covx = np.cov(data, rowvar=0)
-    N = covx.shape[0]
-    w, v = scipy.linalg.eigh(covx, eigvals=(N - N_DIMENSIONS, N - 1))
-    v = np.fliplr(v)
-    pcatest_data = np.dot((data - np.mean(data)), v)
-    # reduced_data = data[:, 0:N_DIMENSIONS]
-    return pcatest_data
+
+    pca_data = np.dot((data - np.array(model["mean"])), np.array(model["matrix"]))      # project the test data to train PCA
+    return pca_data
 
 
 def process_training_data(fvectors_train: np.ndarray, labels_train: np.ndarray) -> dict:
@@ -102,11 +98,15 @@ def process_training_data(fvectors_train: np.ndarray, labels_train: np.ndarray) 
     # then the model will need to store the dimensionally-reduced training data and labels
     # e.g. Storing training data labels and feature vectors in the model.
 
-
     model = {}
     model["labels_train"] = labels_train.tolist()
+    covx = np.cov(fvectors_train, rowvar=0)
+    N = covx.shape[0]
+    w, v = scipy.linalg.eigh(covx, eigvals=(N - N_DIMENSIONS, N - 1))
+    model["mean"] = np.mean(fvectors_train)
+    model["matrix"] = np.fliplr(v).tolist()     # store matrix to model for reduce dimensions function
     fvectors_train_reduced = reduce_dimensions(fvectors_train, model)
-    model["fvectors_train"] = fvectors_train_reduced.tolist()
+    model["fvectors_train"] = fvectors_train_reduced.tolist()   # reduced dimensions data
     return model
 
 def multidivergence(data_one, data_two, features):
@@ -151,74 +151,8 @@ def classify_squares(fvectors_test: np.ndarray, model: dict) -> List[str]:
     Returns:
         List[str]: A list of classifier labels, i.e. one label per input feature vector.
     """
-    # features_all = list(range(0,20))
-    # d = np.zeros(len(features_all))
-    # ddd=zeros(1, features_all)
-    #
-    # # for i in range(features_all):
-    # #     d[i] = multidivergence(adata, bdata, [i])
-    # # index1 = np.argmax(d)
-    #
-    #
-    # features_possible = []
-    # for i in (0,1):
-    #     for j in (2,3):
-    #         for k in (4,5):
-    #             for l in (6,7):
-    #                 for m in (8,9):
-    #                     for n in (10,11):
-    #                         for o in (12,13):
-    #                             for p in (14,15):
-    #                                 for q in (16,17):
-    #                                     for r in (18,19):
-    #                                         this_features = features_all.copy()
-    #                                         this_features.remove(i)
-    #                                         this_features.remove(j)
-    #                                         this_features.remove(k)
-    #                                         this_features.remove(l)
-    #                                         this_features.remove(m)
-    #                                         this_features.remove(n)
-    #                                         this_features.remove(o)
-    #                                         this_features.remove(p)
-    #                                         this_features.remove(q)
-    #                                         this_features.remove(r)
-    #                                         features_possible.append(this_features)
-    # alphabet = ['A','B','C','D','E','F','G','H','I','J','K','l','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
-    # features_better = []
-    # dmax = []
-    # d_list = []
-    # d = np.zeros(len(features_possible))
-    # for d_one in alphabet:
-    #     for d_two in alphabet[alphabet.index(d_one)+1:]:
-    #         if d_one != d_two and d_one!='Z':
-    #             for i in range(len(features_possible)):
-    #                 data_one = fvectors_train[labels_train == d_one]
-    #                 data_two = fvectors_train[labels_train == d_two]
-    #                 d[i] = multidivergence(data_one,data_two,features_possible[i])
-    #
-    #         index1 = np.argmax(d)
-    #         dmax.append(index1)
-    #         d_list.append([d_one,d_two])
-    #     sorted_indexes = np.argsort(-d)
-    #     features_better.append(sorted_indexes[0:10])
-    #     # np.array(features_better)
-    # list_f = np.array(features_better).flatten()
-    # d2 = Counter(list_f)
-    # sorted_x = sorted(d2.items(), key=lambda x: x[1], reverse=True)
-    #
-    # # sss is the test data before
-    # # features = [314, 50, 835, 752, 574, 721, 72, 137, 647, 825, 938, 437, 141, 441, 944, 1018, 566, 522, 407, 483]
-    # features = [x for x, _ in sorted_x][0:20]
-    # fvectors_train = np.asarray(fvectors_train)[features]
-    # label_train = np.asarray(labels_train)[features]
-    # model["labels_train"] = label_train.tolist()
-    # fvectors_train_reduced = reduce_dimensions(fvectors_train, model)
-    # model["fvectors_train"] = fvectors_train_reduced.tolist()
 
-
-    features = list(range(0,20))
-    fvectors_train = np.array(model["fvectors_train"])#[:, features]
-    fvectors_test = fvectors_test.copy()#[:, features]
+    fvectors_train = np.array(model["fvectors_train"])
     labels_train = np.array(model["labels_train"])
 
     x = np.dot(fvectors_test, fvectors_train.transpose())
@@ -226,7 +160,6 @@ def classify_squares(fvectors_test: np.ndarray, model: dict) -> List[str]:
     modtrain = np.sqrt(np.sum(fvectors_train * fvectors_train, axis=1))
     dist = x / np.outer(modtest, modtrain.transpose())
     nearest = np.argmax(dist, axis=1)
-    mdist = np.max(dist, axis=1)
     label = labels_train[nearest]
 
     return label
