@@ -84,7 +84,7 @@ def process_training_data(fvectors_train: np.ndarray, labels_train: np.ndarray) 
     fvectors_train_reduced = reduce_dimensions(fvectors_train, model)
     # features = get_features(fvectors_train_reduced,labels_train)
     model["fvectors_train"] = fvectors_train_reduced.tolist()   # reduced dimensions data
-    # model["fvectors_train"] = fvectors_train_reduced[:][features].tolist()   # reduced dimensions data
+    # model["fvectors_train"] = fvectors_train_reduced[:][features].tolist()
     return model
 
 
@@ -215,7 +215,7 @@ def words_matcher(row, column, dest_direct, word, labels):
 
 
 # def get_features(fvectors_train,labels_train):
-#     features dimensions could be 50
+#     # features dimensions could be 50
 #     d = []
 #     features_all = list(range(0, 50))
 #     alphabet = ['A','B','C','D','E','F','G','H','I','J','K','l','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
