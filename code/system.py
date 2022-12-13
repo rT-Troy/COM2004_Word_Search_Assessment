@@ -6,7 +6,6 @@ REWRITE THE FUNCTIONS BELOW AND REWRITE THIS DOCSTRING
 
 version: v1.0
 """
-from collections import Counter
 from typing import List, Union, Tuple
 
 import numpy as np
@@ -71,99 +70,34 @@ def reduce_dimensions(data: np.ndarray, model: dict) -> np.ndarray:
 
 
 def process_training_data(fvectors_train: np.ndarray, labels_train: np.ndarray) -> dict:
-    """Process the labeled training data and return model parameters stored in a dictionary.
-
-    REWRITE THIS FUNCTION AND THIS DOCSTRING
-
-    This is your classifier's training stage. You need to learn the model parameters
-    from the training vectors and labels that are provided. The parameters of your
-    trained model are then stored in the dictionary and returned. Note, the contents
-    of the dictionary are up to you, and it can contain any serializable
-    data types stored under any keys. This dictionary will be passed to the classifier.
-
-    The dummy implementation stores the labels and the dimensionally reduced training
-    vectors. These are what you would need to store if using a non-parametric
-    classifier such as a nearest neighbour or k-nearest neighbour classifier.
-
-    Args:
-        fvectors_train (np.ndarray): training data feature vectors stored as rows.
-        labels_train (np.ndarray): the labels corresponding to the feature vectors.
-
+    """
     Returns:
         dict: a dictionary storing the model data.
     """
-
-    # The design of this is entirely up to you.
-    # Note, if you are using an instance based approach, e.g. a nearest neighbour,
-    # then the model will need to store the dimensionally-reduced training data and labels
-    # e.g. Storing training data labels and feature vectors in the model.
-
-
 
     model = {}
     model["labels_train"] = labels_train.tolist()
     covx = np.cov(fvectors_train, rowvar=0)
     N = covx.shape[0]
-    w, v = scipy.linalg.eigh(covx, eigvals=(N - N_DIMENSIONS, N - 1))
+    w, v = scipy.linalg.eigh(covx, eigvals=(N - 50, N - 1))
     model["mean"] = np.mean(fvectors_train)
     model["matrix"] = np.fliplr(v).tolist()     # store matrix to model for reduce dimensions function
     fvectors_train_reduced = reduce_dimensions(fvectors_train, model)
+    # features = get_features(fvectors_train_reduced,labels_train)
     model["fvectors_train"] = fvectors_train_reduced.tolist()   # reduced dimensions data
+    # model["fvectors_train"] = fvectors_train_reduced[:][features].tolist()   # reduced dimensions data
     return model
-
-def multidivergence(data_one, data_two, features):
-        ndim = 20
-        # compute mean vectors
-
-        mu1 = np.mean(data_one[:, features], axis=0)
-        mu2 = np.mean(data_two[:, features], axis=0)
-
-        # compute distance between means
-        dmu = mu1 - mu2
-
-        # compute covariance and inverse covariance matrices
-        cov1 = np.cov(data_one[:, features], rowvar=0)
-        cov2 = np.cov(data_two[:, features], rowvar=0)
-
-        icov1 = np.linalg.inv(cov1)
-        icov2 = np.linalg.inv(cov2)
-
-        # plug everything into the formula for multivariate gaussian divergence
-        d12 = 0.5 * np.trace(
-            np.dot(icov1, cov2) + np.dot(icov2, cov1) - 2 * np.eye(ndim)
-        ) + 0.5 * np.dot(np.dot(dmu, icov1 + icov2), dmu)
-        return d12
 
 
 def classify_squares(fvectors_test: np.ndarray, model: dict) -> List[str]:
-    """Dummy implementation of classify squares.
-
-    REWRITE THIS FUNCTION AND THIS DOCSTRING
-
-    This is the classification stage. You are passed a list of unlabelled feature
-    vectors and the model parameters learn during the training stage. You need to
-    classify each feature vector and return a list of labels.
-
-    In the dummy implementation, the label 'E' is returned for every square.
-
-    Args:
-        fvectors_train (np.ndarray): feature vectors that are to be classified, stored as rows.
-        model (dict): a dictionary storing all the model parameters needed by your classifier.
-
+    """
     Returns:
         List[str]: A list of classifier labels, i.e. one label per input feature vector.
     """
 
-
     fvectors_train = np.array(model["fvectors_train"])
     labels_train = np.array(model["labels_train"])
 
-    # sss is the test data before
-    # select_feature = [314, 50, 835, 752, 574, 721, 72, 137, 647, 825, 938, 437, 141, 441, 944, 1018, 566, 522, 407, 483]
-    # get_features(fvectors_train,labels_train)
-
-    selected_fvectors_train = np.array(model["fvectors_train"])#[:,features]
-    selected_labels_train = np.array(model["labels_train"])#[features]
     x = np.dot(fvectors_test, fvectors_train.transpose())
     modtest = np.sqrt(np.sum(fvectors_test * fvectors_test, axis=1))
     modtrain = np.sqrt(np.sum(fvectors_train * fvectors_train, axis=1))
@@ -173,110 +107,107 @@ def classify_squares(fvectors_test: np.ndarray, model: dict) -> List[str]:
 
     return label
 
-def get_features(fvectors_train,labels_train):
-    features_all = list(range(0,20))
-    features_possible = []
-    for i in (0,1):
-        for j in (2,3):
-            for k in (4,5):
-                for l in (6,7):
-                    for m in (8,9):
-                        for n in (10,11):
-                            for o in (12,13):
-                                for p in (14,15):
-                                    for q in (16,17):
-                                        for r in (18,19):
-                                            this_features = features_all.copy()
-                                            this_features.remove(i)
-                                            this_features.remove(j)
-                                            this_features.remove(k)
-                                            this_features.remove(l)
-                                            this_features.remove(m)
-                                            this_features.remove(n)
-                                            this_features.remove(o)
-                                            this_features.remove(p)
-                                            this_features.remove(q)
-                                            this_features.remove(r)
-                                            features_possible.append(this_features)
-    alphabet = ['A','B','C','D','E','F','G','H','I','J','K','l','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
-    features_better = []
-    dmax = []
-    d_list = []
-    d = np.zeros(len(features_possible))
-    for d_one in alphabet:
-        for d_two in alphabet[alphabet.index(d_one)+1:]:
-            if d_one != d_two and d_one!='Z':
-                for i in range(len(features_possible)):
-                    data_one = fvectors_train[labels_train == d_one]
-                    data_two = fvectors_train[labels_train == d_two]
-                    d[i] = multidivergence(data_one,data_two,features_possible[i])
 
-            index1 = np.argmax(d)
-            dmax.append(index1)
-            d_list.append([d_one,d_two])
-        sorted_indexes = np.argsort(-d)
-        features_better.append(sorted_indexes[0:10])
-    list_f = np.array(features_better).flatten()
-    d2 = Counter(list_f)
-    sorted_x = sorted(d2.items(), key=lambda x: x[1], reverse=True)
-    return [x for x, _ in sorted_x][0:20]
+# def get_features(fvectors_train,labels_train):
+#     d = []
+#     features_all = list(range(0, 50))
+#     alphabet = ['A','B','C','D','E','F','G','H','I','J','K','l','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+#     for d_one in alphabet:
+#         for d_two in alphabet[alphabet.index(d_one)+1:]:
+#             if d_one != d_two and d_one!='Z':
+#                 data_one = fvectors_train[labels_train == d_one]
+#                 data_two = fvectors_train[labels_train == d_two]
+#                 for i in range(len(features_all)):
+#                     d = multidivergence(data_one,data_two,features_all[i])
+#                 index1 = np.argmax(d)
+#                 print(index1)
+
+    # features_all = list(range(0,50))
+    # alphabet = ['A','B','C','D','E','F','G','H','I','J','K','l','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+    # features_better = []
+    # dmax = []
+    # d_list = []
+    # for d_one in alphabet:
+    #     for d_two in alphabet[alphabet.index(d_one)+1:]:
+    #         if d_one != d_two and d_one!='Z':
+    #             data_one = fvectors_train[labels_train == d_one]
+    #             data_two = fvectors_train[labels_train == d_two]
+    #             d = multidivergence(data_one,data_two,features_all)
+    #
+    #         index1 = np.argmax(d)
+    #         dmax.append(index1)
+    #         d_list.append([d_one,d_two])
+    #     sorted_indexes = np.argsort(-d)
+    #     features_better.append(sorted_indexes[0:10])
+    # list_f = np.array(features_better).flatten()
+    # d2 = Counter(list_f)
+    # sorted_x = sorted(d2.items(), key=lambda x: x[1], reverse=True)
+    # return [x for x, _ in sorted_x][0:20]
 
 
-def find_words(labels: np.ndarray, words: List[str], model: dict) -> list[Union[list[tuple[int, int]], list[int]]]:
-    """Dummy implementation of find_words.
+# def multidivergence(data_one, data_two, features):
+#     ndim = len(features)
+#     # compute mean vectors
+#
+#     mu1 = np.mean(data_one[:, features], axis=0)
+#     mu2 = np.mean(data_two[:, features], axis=0)
+#
+#     # compute distance between means
+#     dmu = mu1 - mu2
+#
+#     # compute covariance and inverse covariance matrices
+#     cov1 = np.cov(data_one[:, features], rowvar=0)
+#     cov2 = np.cov(data_two[:, features], rowvar=0)
+#
+#     icov1 = np.linalg.inv(cov1.tolist())
+#     icov2 = np.linalg.inv(cov2.tolist())
+#
+#     # plug everything into the formula for multivariate gaussian divergence
+#     d12 = 0.5 * np.trace(
+#         np.dot(icov1, cov2) + np.dot(icov2, cov1) - 2 * np.eye(ndim)
+#     ) + 0.5 * np.dot(np.dot(dmu, icov1 + icov2), dmu)
+#     return d12
 
-    REWRITE THIS FUNCTION AND THIS DOCSTRING
 
-    This function searches for the words in the grid of classified letter labels.
-    You are passed the letter labels as a 2-D array and a list of words to search for.
-    You need to return a position for each word. The word position should be
-    represented as tuples of the form (start_row, start_col, end_row, end_col).
-
-    Note, the model dict that was learnt during training has also been passed to this
-    function. Most simple implementations will not need to use this but it is provided
-    in case you have ideas that need it.
-
-    In the dummy implementation, the position (0, 0, 1, 1) is returned for every word.
-
-    Args:
-        labels (np.ndarray): 2-D array storing the character in each
-            square of the wordsearch puzzle.
-        words (list[str]): A list of words to find in the wordsearch puzzle.
-        model (dict): The model parameters learned during training.
-
-    Returns:
-        list[tuple]: A list of four-element tuples indicating the word positions.
+def find_words(labels: np.ndarray, words: List[str], model: dict) -> List[tuple]:
     """
-    result = []
+    Returns: list[tuple]: A list of four-element tuples indicating the word positions.
+    """
+
+    result_pos = []
     direction = ([0,-1],[-1,-1],[-1,0],[-1,1],[0,1],[1,1],[1,0],[1,-1])
     for i in range(len(words)):
-        boo = False
+        correct_rates = []
+        possible_result = []
         for row in range(len(labels)):
             for column in range(len(labels[0])):
                 label = np.array2string(labels[row][column])[1:2]
                 if words[i][:1].upper() == label:
-                    desti = destination_axies(row, column, len(labels)-1, len(labels[0])-1, words[i],direction)
+                    desti = destination_axis(row, column, len(labels)-1, len(labels[0])-1, words[i],direction)
                     for k in range(len(desti)):
-                        if words_check(row, column, desti[k], words[i], labels):
-                            result.append((row,column,desti[k][0][0],desti[k][0][1]))
-                            boo = True
-        if not boo:
-            result.append([0,0,1,1])
-
-
-
-
-
-
-    return result
+                        rate, result = words_correct_rate(row, column, desti[k], words[i], labels)
+                        correct_rates.append(rate)
+                        possible_result.append(result)
+        index = correct_rates.index(max(correct_rates))
+        result_pos.append(possible_result[index])
+    return result_pos
     # return [(0, 0, 1, 1)] * len(words)
 
-'''
-    destination_axies
-    row: original row
-    column: original column
-'''
-def destination_axies(row, column, row_max, column_max, word, direction):
+
+def destination_axis(row, column, row_max, column_max, word, direction):
+    """
+
+    Args:
+        row:
+        column:
+        row_max:
+        column_max:
+        word:
+        direction:
+
+    Returns: the destination axies and the direction
+
+    """
     destination = []
     minuend = len(word)-1
     left_allow = column-minuend >= 0
@@ -303,14 +234,17 @@ def destination_axies(row, column, row_max, column_max, word, direction):
 
     return destination
 
-def words_check(row,column,destination,word,labels):
-        boo = True
-        for iterate in range(len(word)):
-            if boo ==True:
-                next_row = row + (destination[1][0])*iterate
-                next_column = column + (destination[1][1])*iterate
-                letter = word[iterate:iterate + 1].upper()
-                label = np.array2string(labels[next_row][next_column])[1:2]
-                if label != letter:
-                    boo = False
-        return boo
+
+def words_correct_rate(row, column, destination, word, labels):
+
+    correct_num = 0
+    for iterate in range(len(word)):
+        next_row = row + (destination[1][0])*iterate
+        next_column = column + (destination[1][1])*iterate
+        letter = word[iterate:iterate + 1].upper()
+        label = np.array2string(labels[next_row][next_column])[1:2]
+        if label == letter:
+            correct_num = correct_num + 1
+    correct_rate = correct_num/len(word)
+    result = (row, column, destination[0][0], destination[0][1])
+    return correct_rate, result
