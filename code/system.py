@@ -113,6 +113,107 @@ def classify_squares(fvectors_test: np.ndarray, model: dict) -> List[str]:
     return label
 
 
+def find_words(labels: np.ndarray, words: List[str], model: dict) -> List[tuple]:
+    """Dummy implementation of find_words.
+
+    Args:
+        labels (np.ndarray): 2-D array storing the character in each
+            square of the wordsearch puzzle.
+        words (list[str]): A list of words to find in the wordsearch puzzle.
+        model (dict): The model parameters learned during training.
+
+    Returns:
+        list[tuple]: A list of four-element tuples indicating the word positions.
+    """
+
+    result_pos = []
+    direction = ([0,-1],[-1,-1],[-1,0],[-1,1],[0,1],[1,1],[1,0],[1,-1])
+    for i in range(len(words)):
+        correct_rates = []
+        possible_result = []
+        for row in range(len(labels)):
+            for column in range(len(labels[0])):
+                label = np.array2string(labels[row][column])[1:2]
+                if words[i][:1].upper() == label:
+                    dest_direct = next_dest_and_direct(row, column, len(labels) - 1, len(labels[0]) - 1, words[i], direction)
+                    for k in range(len(dest_direct)):
+                        rate, result = words_matcher(row, column, dest_direct[k], words[i], labels)
+                        correct_rates.append(rate)
+                        possible_result.append(result)
+        index = correct_rates.index(max(correct_rates))     # take the highest correct rate one
+        result_pos.append(possible_result[index])
+    return result_pos
+
+
+def next_dest_and_direct(row, column, row_max, column_max, word, direction):
+    """ get all possible destinations axis and its the directions.
+
+    Args:
+        row:start row axis
+        column: start column axis
+        row_max: the bound of row, can't escape
+        column_max: the bound of column, can't escape
+        word: the searching word
+        direction: direction as unit
+
+    Returns: all possible destinations axis and its the directions
+
+    """
+    destination = []
+    minuend = len(word)-1
+    left_allow = column-minuend >= 0
+    right_allow = column+minuend <= column_max
+    up_allow = row-minuend >= 0
+    down_allow = row+minuend <= row_max
+
+    if left_allow:
+        destination.append(([row, column-minuend], direction[0]))
+    if up_allow and left_allow:
+        destination.append(([row-minuend,column-minuend],direction[1]))
+    if up_allow:
+        destination.append(([row-minuend, column], direction[2]))
+    if up_allow and right_allow:
+        destination.append(([row-minuend, column+minuend], direction[3]))
+    if right_allow:
+        destination.append(([row, column+minuend], direction[4]))
+    if right_allow and down_allow:
+        destination.append(([row+minuend, column+minuend], direction[5]))
+    if down_allow:
+        destination.append(([row+minuend, column], direction[6]))
+    if down_allow and left_allow:
+        destination.append(([row+minuend, column-minuend], direction[7]))
+
+    return destination
+
+
+def words_matcher(row, column, dest_direct, word, labels):
+
+    """Match the rote of letters with words
+
+    Args:
+        row:
+        column:
+        dest_direct: destination axis and direction
+        word: the searching word
+        labels: letter labels array
+
+    Returns:the required type of axis and its correct rate
+
+    """
+
+    correct_num = 0
+    for iterate in range(len(word)):    # match for every letter
+        next_row = row + (dest_direct[1][0]) * iterate
+        next_column = column + (dest_direct[1][1]) * iterate
+        letter = word[iterate:iterate + 1].upper()
+        label = np.array2string(labels[next_row][next_column])[1:2]
+        if label == letter:
+            correct_num = correct_num + 1
+    correct_rate = correct_num/len(word)
+    result = (row, column, dest_direct[0][0], dest_direct[0][1])
+    return correct_rate, result
+
+
 # def get_features(fvectors_train,labels_train):
 #     features dimensions could be 50
 #     d = []
@@ -170,103 +271,3 @@ def classify_squares(fvectors_test: np.ndarray, model: dict) -> List[str]:
 #         np.dot(icov1, cov2) + np.dot(icov2, cov1) - 2 * np.eye(ndim)
 #     ) + 0.5 * np.dot(np.dot(dmu, icov1 + icov2), dmu)
 #     return d12
-
-
-def find_words(labels: np.ndarray, words: List[str], model: dict) -> List[tuple]:
-    """Dummy implementation of find_words.
-
-    Args:
-        labels (np.ndarray): 2-D array storing the character in each
-            square of the wordsearch puzzle.
-        words (list[str]): A list of words to find in the wordsearch puzzle.
-        model (dict): The model parameters learned during training.
-
-    Returns:
-        list[tuple]: A list of four-element tuples indicating the word positions.
-    """
-
-    result_pos = []
-    direction = ([0,-1],[-1,-1],[-1,0],[-1,1],[0,1],[1,1],[1,0],[1,-1])
-    for i in range(len(words)):
-        correct_rates = []
-        possible_result = []
-        for row in range(len(labels)):
-            for column in range(len(labels[0])):
-                label = np.array2string(labels[row][column])[1:2]
-                if words[i][:1].upper() == label:
-                    dest_direct = next_dest_and_direct(row, column, len(labels) - 1, len(labels[0]) - 1, words[i], direction)
-                    for k in range(len(dest_direct)):
-                        rate, result = words_matcher(row, column, dest_direct[k], words[i], labels)
-                        correct_rates.append(rate)
-                        possible_result.append(result)
-        index = correct_rates.index(max(correct_rates))     # take the highest correct rate one
-        result_pos.append(possible_result[index])
-    return result_pos
-
-
-def next_dest_and_direct(row, column, row_max, column_max, word, direction):
-    """
-
-    Args:
-        row:start row axis
-        column: start column axis
-        row_max: the bound of row, can't escape
-        column_max: the bound of column, can't escape
-        word: the searching word
-        direction: direction as unit
-
-    Returns: the destination axis and the direction
-
-    """
-    destination = []
-    minuend = len(word)-1
-    left_allow = column-minuend >= 0
-    right_allow = column+minuend <= column_max
-    up_allow = row-minuend >= 0
-    down_allow = row+minuend <= row_max
-
-    if left_allow:
-        destination.append(([row, column-minuend], direction[0]))
-    if up_allow and left_allow:
-        destination.append(([row-minuend,column-minuend],direction[1]))
-    if up_allow:
-        destination.append(([row-minuend, column], direction[2]))
-    if up_allow and right_allow:
-        destination.append(([row-minuend, column+minuend], direction[3]))
-    if right_allow:
-        destination.append(([row, column+minuend], direction[4]))
-    if right_allow and down_allow:
-        destination.append(([row+minuend, column+minuend], direction[5]))
-    if down_allow:
-        destination.append(([row+minuend, column], direction[6]))
-    if down_allow and left_allow:
-        destination.append(([row+minuend, column-minuend], direction[7]))
-
-    return destination
-
-
-def words_matcher(row, column, dest_direct, word, labels):
-    ''' Match the rote of letters with words
-
-    Args:
-        row:
-        column:
-        dest_direct: destination axis and direction
-        word: the searching word
-        labels: letter labels array
-
-    Returns:the required type of axis and its correct rate
-
-    '''
-
-    correct_num = 0
-    for iterate in range(len(word)):    # match for every letter
-        next_row = row + (dest_direct[1][0]) * iterate
-        next_column = column + (dest_direct[1][1]) * iterate
-        letter = word[iterate:iterate + 1].upper()
-        label = np.array2string(labels[next_row][next_column])[1:2]
-        if label == letter:
-            correct_num = correct_num + 1
-    correct_rate = correct_num/len(word)
-    result = (row, column, dest_direct[0][0], dest_direct[0][1])
-    return correct_rate, result
