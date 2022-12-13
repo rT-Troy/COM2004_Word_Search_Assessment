@@ -7,7 +7,7 @@ REWRITE THE FUNCTIONS BELOW AND REWRITE THIS DOCSTRING
 version: v1.0
 """
 from collections import Counter
-from typing import List
+from typing import List, Union, Tuple
 
 import numpy as np
 import scipy.linalg
@@ -112,7 +112,7 @@ def process_training_data(fvectors_train: np.ndarray, labels_train: np.ndarray) 
     return model
 
 def multidivergence(data_one, data_two, features):
-        ndim = 10
+        ndim = 20
         # compute mean vectors
 
         mu1 = np.mean(data_one[:, features], axis=0)
@@ -158,14 +158,12 @@ def classify_squares(fvectors_test: np.ndarray, model: dict) -> List[str]:
     fvectors_train = np.array(model["fvectors_train"])
     labels_train = np.array(model["labels_train"])
 
-
     # sss is the test data before
     # select_feature = [314, 50, 835, 752, 574, 721, 72, 137, 647, 825, 938, 437, 141, 441, 944, 1018, 566, 522, 407, 483]
-    get_features(fvectors_train,labels_train)
+    # get_features(fvectors_train,labels_train)
 
     selected_fvectors_train = np.array(model["fvectors_train"])#[:,features]
     selected_labels_train = np.array(model["labels_train"])#[features]
-    labels_train = np.array(model["labels_train"])
     x = np.dot(fvectors_test, fvectors_train.transpose())
     modtest = np.sqrt(np.sum(fvectors_test * fvectors_test, axis=1))
     modtrain = np.sqrt(np.sum(fvectors_train * fvectors_train, axis=1))
@@ -224,7 +222,7 @@ def get_features(fvectors_train,labels_train):
     return [x for x, _ in sorted_x][0:20]
 
 
-def find_words(labels: np.ndarray, words: List[str], model: dict) -> List[tuple]:
+def find_words(labels: np.ndarray, words: List[str], model: dict) -> list[Union[list[tuple[int, int]], list[int]]]:
     """Dummy implementation of find_words.
 
     REWRITE THIS FUNCTION AND THIS DOCSTRING
@@ -249,4 +247,70 @@ def find_words(labels: np.ndarray, words: List[str], model: dict) -> List[tuple]
     Returns:
         list[tuple]: A list of four-element tuples indicating the word positions.
     """
-    return [(0, 0, 1, 1)] * len(words)
+    result = []
+    direction = ([0,-1],[-1,-1],[-1,0],[-1,1],[0,1],[1,1],[1,0],[1,-1])
+    for i in range(len(words)):
+        boo = False
+        for row in range(len(labels)):
+            for column in range(len(labels[0])):
+                label = np.array2string(labels[row][column])[1:2]
+                if words[i][:1].upper() == label:
+                    desti = destination_axies(row, column, len(labels)-1, len(labels[0])-1, words[i],direction)
+                    for k in range(len(desti)):
+                        if words_check(row, column, desti[k], words[i], labels):
+                            result.append((row,column,desti[k][0][0],desti[k][0][1]))
+                            boo = True
+        if not boo:
+            result.append([0,0,1,1])
+
+
+
+
+
+
+    return result
+    # return [(0, 0, 1, 1)] * len(words)
+
+'''
+    destination_axies
+    row: original row
+    column: original column
+'''
+def destination_axies(row, column, row_max, column_max, word, direction):
+    destination = []
+    minuend = len(word)-1
+    left_allow = column-minuend >= 0
+    right_allow = column+minuend <= column_max
+    up_allow = row-minuend >= 0
+    down_allow = row+minuend <= row_max
+
+    if left_allow:
+        destination.append(([row, column-minuend], direction[0]))
+    if up_allow and left_allow:
+        destination.append(([row-minuend,column-minuend],direction[1]))
+    if up_allow:
+        destination.append(([row-minuend, column], direction[2]))
+    if up_allow and right_allow:
+        destination.append(([row-minuend, column+minuend], direction[3]))
+    if right_allow:
+        destination.append(([row, column+minuend], direction[4]))
+    if right_allow and down_allow:
+        destination.append(([row+minuend, column+minuend], direction[5]))
+    if down_allow:
+        destination.append(([row+minuend, column], direction[6]))
+    if down_allow and left_allow:
+        destination.append(([row+minuend, column-minuend], direction[7]))
+
+    return destination
+
+def words_check(row,column,destination,word,labels):
+        boo = True
+        for iterate in range(len(word)):
+            if boo ==True:
+                next_row = row + (destination[1][0])*iterate
+                next_column = column + (destination[1][1])*iterate
+                letter = word[iterate:iterate + 1].upper()
+                label = np.array2string(labels[next_row][next_column])[1:2]
+                if label != letter:
+                    boo = False
+        return boo
